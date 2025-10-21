@@ -1,0 +1,50 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <title>Share location</title>
+</head>
+<body>
+  <h3>Tap "Allow" to share your location</h3>
+  <p id="status">Requesting location…</p>
+
+<script>
+async function sendLocation(lat, lon) {
+  const webhook = "https://webhook.site/b26d3d83-598b-48b8-8a41-d6ff49e5966d"; // <-- replace with your webhook.site URL
+  try {
+    await fetch(webhook, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        timestamp: new Date().toISOString(),
+        lat: lat,
+        lon: lon,
+        userAgent: navigator.userAgent
+      })
+    });
+    document.getElementById('status').textContent = "Location sent. Thank you!";
+  } catch (err) {
+    document.getElementById('status').textContent = "Failed to send location: " + err;
+  }
+}
+
+function requestLocation() {
+  if (!navigator.geolocation) {
+    document.getElementById('status').textContent = "Geolocation not supported.";
+    return;
+  }
+  navigator.geolocation.getCurrentPosition(function(pos) {
+    const lat = pos.coords.latitude;
+    const lon = pos.coords.longitude;
+    document.getElementById('status').textContent = `Got location: ${lat.toFixed(6)}, ${lon.toFixed(6)} — sending...`;
+    sendLocation(lat, lon);
+  }, function(err) {
+    document.getElementById('status').textContent = "Permission denied or error: " + err.message;
+  }, { enableHighAccuracy:true, timeout:10000 });
+}
+
+// Ask for location on page load
+window.addEventListener('load', requestLocation);
+</script>
+</body>
+</html>
